@@ -1,0 +1,65 @@
+# jyapystock
+
+A Python library to fetch live and historical prices for Indian and American stocks.
+
+## Features
+- Live price and historical price support
+- Indian (NSE/BSE) and American (NYSE/NASDAQ) stocks
+- Multiple data sources: yfinance (default), Alpha Vantage (optional)
+ - Multiple data sources: yfinance, Alpha Vantage (optional)
+ - Auto-fallback: if `source` is not provided (or set to `None` or `'auto'`), the provider will try available free sources in order: `yfinance` first, then `Alpha Vantage` if an API key is available.
+ - Auto-fallback: if `source` is not provided (or set to `None` or `'auto'`), the provider will try available free sources in order: `yfinance` first, then `Alpha Vantage` if an API key is available.
+ - Country: `StockPriceProvider` now requires a `country` argument. Supported values: `India`, `USA`.
+	 - For `India`, when using `yfinance` the provider will try symbol variants in this order when the symbol has no exchange suffix: `SYMBOL.NS`, `SYMBOL.BO`, then `SYMBOL`.
+
+## Installation
+```bash
+pip install -r requirements.txt
+```
+
+## Installing as a library (recommended)
+
+This project is intended to be used as a Python library. To install locally (editable/development):
+
+```bash
+# install editable for development
+pip install -e .
+
+# or install for local use
+pip install .
+```
+
+For development and CI reproducibility, install pinned dev dependencies:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+## Usage
+```python
+from jyapystock.stock_price_provider import StockPriceProvider
+provider = StockPriceProvider(country="USA", source="yfinance")
+price = provider.get_live_price("AAPL")
+price_in = provider.get_live_price("RELIANCE.NS")
+hist = provider.get_historical_price("AAPL", "2023-01-01", "2023-01-31")
+
+# Using Alpha Vantage (requires API key)
+# Auto mode (recommended): omit `source` or set `source=None` / `source='auto'`.
+provider_av = StockPriceProvider(country="USA", source="alphavantage", alpha_vantage_api_key="YOUR_API_KEY")
+provider_auto = StockPriceProvider(country="USA")  # will try yfinance, then Alpha Vantage if API key present
+price_av = provider_av.get_live_price("AAPL")
+hist_av = provider_av.get_historical_price("AAPL", "2023-01-01", "2023-01-31")
+```
+
+## Supported Sources
+- **yfinance**: Free, supports most global stocks
+- **Alpha Vantage**: Free tier, requires API key, supports global stocks
+- **Polygon.io, IEX Cloud**: Paid, US stocks (not implemented yet)
+
+## Testing
+```bash
+python -m unittest discover tests
+```
+
+## License
+MIT
