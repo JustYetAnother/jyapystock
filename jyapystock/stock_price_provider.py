@@ -8,6 +8,7 @@ from typing import Optional, Union
 import os
 from jyapystock.alpha_vantage_support import get_alpha_vantage_live_price, get_alpha_vantage_historical_price
 from jyapystock.yfinance_support import get_yfinance_live_price, get_yfinance_historical_prices
+from jyapystock.nasdaq_support import get_nasdaq_live_price, get_nasdaq_historical_prices
 
 class StockPriceProvider:
     def __init__(self, country: str, source: Optional[str] = None, alpha_vantage_api_key: Optional[str] = None):
@@ -28,7 +29,7 @@ class StockPriceProvider:
 
     def check_source_validity(self):
         """Check if the provided source is valid."""
-        valid_sources = ["yfinance", "alphavantage", "auto"]
+        valid_sources = ["yfinance", "alphavantage", "nasdaq", "auto"]
         if self.source not in valid_sources:
             raise ValueError(f"Unknown source: {self.source}. Valid options are: {valid_sources}")
 
@@ -51,6 +52,11 @@ class StockPriceProvider:
             val = get_yfinance_live_price(symbol, self.country)
             if val is not None:
                 return val
+        # Try NASDAQ-specific provider for USA symbols
+        if (self.source == "nasdaq" or self.source == "auto") and self.country == "usa":
+            val = get_nasdaq_live_price(symbol, self.country)
+            if val is not None:
+                return val
         
         if self.source == "alphavantage" or self.source == "auto":
             # Try Alpha Vantage if API key available
@@ -71,10 +77,16 @@ class StockPriceProvider:
             if val is not None:
                 return val
         
+        # NASDAQ historical provider (USA)
+        if (self.source == "nasdaq" or self.source == "auto") and self.country == "usa":
+            val = get_nasdaq_historical_prices(symbol, start, end, self.country)
+            if val is not None:
+                return val
+        
         if self.source == "alphavantage" or self.source == "auto":
             av_key = self.alpha_vantage_api_key or os.environ.get("ALPHAVANTAGE_API_KEY")
             if av_key:
-                val = get_alpha_vantage_historical_price(symbol, str(start), str(end), av_key)
+                val = get_alpha_vantage_historical_price(symbol, start, end, av_key)
                 if val is not None:
                     return val
 

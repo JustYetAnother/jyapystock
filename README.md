@@ -39,17 +39,25 @@ pip install -r requirements-dev.txt
 ```python
 from jyapystock.stock_price_provider import StockPriceProvider
 provider = StockPriceProvider(country="USA", source="yfinance")
-price = provider.get_live_price("AAPL")
-price_in = provider.get_live_price("RELIANCE.NS")
 hist = provider.get_historical_price("AAPL", "2023-01-01", "2023-01-31")
+```
 
+```python
+from jyapystock.stock_price_provider import StockPriceProvider
+provider = StockPriceProvider(country="India", source="yfinance")
+price_in = provider.get_live_price("RELIANCE")
+hist = provider.get_historical_price("RELIANCE", "2023-01-01", "2023-01-31")
+```
+
+```python
 # Using Alpha Vantage (requires API key)
 # Auto mode (recommended): omit `source` or set `source=None` / `source='auto'`.
 provider_av = StockPriceProvider(country="USA", source="alphavantage", alpha_vantage_api_key="YOUR_API_KEY")
-provider_auto = StockPriceProvider(country="USA")  # will try yfinance, then Alpha Vantage if API key present
 price_av = provider_av.get_live_price("AAPL")
 hist_av = provider_av.get_historical_price("AAPL", "2023-01-01", "2023-01-31")
 ```
+
+Note: `start` and `end` parameters accepted by `get_historical_price` may be either string dates (e.g. `"2023-01-01"`) or `datetime` objects. All providers normalize these inputs internally.
 
 ## Supported Sources
 - **yfinance**: Free, supports most global stocks

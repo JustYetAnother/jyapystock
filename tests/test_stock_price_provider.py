@@ -8,6 +8,7 @@ class TestStockPriceProvider(unittest.TestCase):
         api_key = os.environ.get("ALPHAVANTAGE_API_KEY", "demo")
         self.provider_av = StockPriceProvider(country="USA", source="alphavantage", alpha_vantage_api_key=api_key)
         self.provider_yf_india = StockPriceProvider(country="India", source="yfinance")
+        self.provider_nasdaq = StockPriceProvider(country="USA", source="nasdaq")
     
     def test_live_price_yfinance(self):
         price = self.provider_yf.get_live_price("AAPL")
@@ -58,6 +59,19 @@ class TestStockPriceProvider(unittest.TestCase):
         provider_in = StockPriceProvider(country="India")
         hist = provider_in.get_historical_price("RELIANCE", "2023-01-01", "2023-01-10")
         self.assertTrue(isinstance(hist, list) or hist is None)
+
+    def test_historical_price_nasdaq(self):
+        # Call the real NASDAQ provider (no mocking) — result may be None if API unavailable
+        hist = self.provider_nasdaq.get_historical_price('AAPL', '2025-12-17', '2025-12-19')
+        # Should be a list of records or None depending on network/API
+        self.assertTrue(isinstance(hist, list))
+        self.assertGreater(len(hist), 0)
+
+    def test_live_price_nasdaq(self):
+        # Call the real NASDAQ live price (no mocking) — may return float or None
+        price = self.provider_nasdaq.get_live_price('AAPL')
+        self.assertTrue(isinstance(price, float) or price is None)
+        self.assertGreater(price, 0)
 
 if __name__ == "__main__":
     unittest.main()
