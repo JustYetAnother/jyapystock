@@ -6,11 +6,9 @@ A Python library to fetch live and historical prices for Indian and American sto
 - Live price and historical price support
 - Indian (NSE/BSE) and American (NYSE/NASDAQ) stocks
 - Multiple data sources: yfinance (default), Alpha Vantage (optional)
- - Multiple data sources: yfinance, Alpha Vantage (optional)
- - Auto-fallback: if `source` is not provided (or set to `None` or `'auto'`), the provider will try available free sources in order: `yfinance` first, then `Alpha Vantage` if an API key is available.
- - Auto-fallback: if `source` is not provided (or set to `None` or `'auto'`), the provider will try available free sources in order: `yfinance` first, then `Alpha Vantage` if an API key is available.
- - Country: `StockPriceProvider` now requires a `country` argument. Supported values: `India`, `USA`.
-	 - For `India`, when using `yfinance` the provider will try symbol variants in this order when the symbol has no exchange suffix: `SYMBOL.NS`, `SYMBOL.BO`, then `SYMBOL`.
+- Auto-fallback: if `source` is not provided (or set to `None` or `'auto'`), the provider will try available free sources in order: `yfinance` first, then `Alpha Vantage` if an API key is available.
+- Country: `StockPriceProvider` now requires a `country` argument. Supported values: `India`, `USA`.
+	- For `India`, when using `yfinance` the provider will try symbol variants in this order when the symbol has no exchange suffix: `SYMBOL.NS`, `SYMBOL.BO`, then `SYMBOL`.
 
 ## Installation
 ```bash
