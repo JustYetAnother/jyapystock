@@ -2,6 +2,12 @@
 
 A Python library to fetch live and historical prices for Indian and American stocks.
 
+Badges (provider status):
+
+[![yfinance tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-yfinance.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-yfinance.yml)
+[![Alpha Vantage tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-alphavantage.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-alphavantage.yml)
+[![NASDAQ tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nasdaq.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nasdaq.yml)
+
 ## Features
 - Live price and historical price support
 - Indian (NSE/BSE) and American (NYSE/NASDAQ) stocks
