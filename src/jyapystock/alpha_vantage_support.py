@@ -11,8 +11,11 @@ from dateutil.parser import parse
 
 def get_alpha_vantage_live_price(symbol: str, api_key: str) -> float:
     url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={api_key}"
-    response = requests.get(url)
-    data = response.json()
+    try:
+        resp = requests.get(url, timeout=10)
+        data = resp.json()
+    except Exception:
+        return None
     try:
         price = float(data["Global Quote"]["05. price"])
         return price
@@ -46,8 +49,11 @@ def get_alpha_vantage_historical_price(symbol: str, start: Union[str, datetime],
         end_dt = end
 
     url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}&outputsize=full&apikey={api_key}"
-    response = requests.get(url)
-    data = response.json()
+    try:
+        resp = requests.get(url, timeout=20)
+        data = resp.json()
+    except Exception:
+        return None
     prices = []
     try:
         ts = data["Time Series (Daily)"]

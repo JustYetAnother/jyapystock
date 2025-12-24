@@ -31,12 +31,13 @@ class TestStockPriceProvider(unittest.TestCase):
         self.assertGreater(len(hist), 0)
 
     def test_live_price_alpha_vantage(self):
-        price = self.provider_av.get_live_price("AAPL")
-        self.assertTrue(isinstance(price, float) or price is None)
+        price = self.provider_av.get_live_price("IBM")
+        self.assertTrue(isinstance(price, float))
 
     def test_historical_price_alpha_vantage(self):
-        hist = self.provider_av.get_historical_price("AAPL", "2023-01-01", "2023-01-10")
+        hist = self.provider_av.get_historical_price("IBM", "2023-01-01", "2023-01-10")
         self.assertTrue(isinstance(hist, list))
+        self.assertGreater(len(hist), 0)
 
     def test_live_price_auto(self):
         provider_auto = StockPriceProvider(country="USA")  # default None == auto
