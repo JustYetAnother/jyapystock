@@ -9,7 +9,11 @@ from datetime import datetime
 from dateutil.parser import parse
 
 
-def get_alpha_vantage_live_price(symbol: str, api_key: str) -> float:
+def get_alpha_vantage_live_price(symbol: str, api_key: str) -> dict:
+    """Fetch live quote data including price and change percent.
+    
+    Returns a dict with 'timestamp', 'price', and 'change_percent', or None if not available.
+    """
     url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={api_key}"
     try:
         resp = requests.get(url, timeout=10)
@@ -17,8 +21,18 @@ def get_alpha_vantage_live_price(symbol: str, api_key: str) -> float:
     except Exception:
         return None
     try:
-        price = float(data["Global Quote"]["05. price"])
-        return price
+        quote = data["Global Quote"]
+        price = float(quote["05. price"])
+        # Alpha Vantage provides change_percent directly
+        change_percent_str = quote.get("10. change percent", "0%")
+        # Parse percentage string (e.g., "1.23%" -> 1.23)
+        change_percent = float(change_percent_str.rstrip('%')) if change_percent_str else 0.0
+        timestamp = quote.get("07. latest trading day", "")
+        return {
+            "timestamp": timestamp,
+            "price": price,
+            "change_percent": round(change_percent, 2)
+        }
     except Exception:
         return None
 

@@ -24,9 +24,12 @@ class TestStockPriceProvider(unittest.TestCase):
     def test_live_price_yfinance(self):
         if not should_run_for(["yfinance"]):
             self.skipTest("Skipping yfinance tests in this run")
-        price = self.provider_yf.get_live_price("AAPL")
-        self.assertIsInstance(price, float)
-        self.assertGreater(price, 0)
+        result = self.provider_yf.get_live_price("AAPL")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
 
     def test_historical_price_yfinance(self):
         if not should_run_for(["yfinance"]):
@@ -38,9 +41,12 @@ class TestStockPriceProvider(unittest.TestCase):
     def test_live_price_yfinance_india(self):
         if not should_run_for(["yfinance"]):
             self.skipTest("Skipping yfinance tests in this run")
-        price = self.provider_yf_india.get_live_price("RELIANCE")
-        self.assertIsInstance(price, float)
-        self.assertGreater(price, 0)
+        result = self.provider_yf_india.get_live_price("RELIANCE")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
 
     def test_historical_price_yfinance(self):
         if not should_run_for(["yfinance"]):
@@ -52,8 +58,12 @@ class TestStockPriceProvider(unittest.TestCase):
     def test_live_price_alpha_vantage(self):
         if not should_run_for(["alphavantage"]):
             self.skipTest("Skipping Alpha Vantage tests in this run")
-        price = self.provider_av.get_live_price("IBM")
-        self.assertTrue(isinstance(price, float))
+        result = self.provider_av.get_live_price("IBM")
+        self.assertTrue(isinstance(result, dict) or result is None)
+        if result is not None:
+            self.assertIn("price", result)
+            self.assertIn("timestamp", result)
+            self.assertIn("change_percent", result)
 
     def test_historical_price_alpha_vantage(self):
         if not should_run_for(["alphavantage"]):
@@ -66,8 +76,12 @@ class TestStockPriceProvider(unittest.TestCase):
         if not should_run_for(["yfinance"]):
             self.skipTest("Skipping auto tests in this run")
         provider_auto = StockPriceProvider(country="USA")  # default None == auto
-        price = provider_auto.get_live_price("AAPL")
-        self.assertTrue(isinstance(price, float) or price is None)
+        result = provider_auto.get_live_price("AAPL")
+        self.assertTrue(isinstance(result, dict) or result is None)
+        if result is not None:
+            self.assertIn("price", result)
+            self.assertIn("timestamp", result)
+            self.assertIn("change_percent", result)
 
     def test_historical_price_auto(self):
         if not should_run_for(["yfinance"]):
@@ -82,8 +96,12 @@ class TestStockPriceProvider(unittest.TestCase):
             self.skipTest("Skipping India/yfinance tests in this run")
         # Ensure provider for India attempts .NS/.BO variants (result may be None if network/API fails)
         provider_in = StockPriceProvider(country="India")
-        price = provider_in.get_live_price("RELIANCE")
-        self.assertTrue(isinstance(price, float) or price is None)
+        result = provider_in.get_live_price("RELIANCE")
+        self.assertTrue(isinstance(result, dict) or result is None)
+        if result is not None:
+            self.assertIn("price", result)
+            self.assertIn("timestamp", result)
+            self.assertIn("change_percent", result)
 
     def test_india_historical_variants(self):
         if not should_run_for(["yfinance"]):
@@ -104,10 +122,14 @@ class TestStockPriceProvider(unittest.TestCase):
     def test_live_price_nasdaq(self):
         if not should_run_for(["nasdaq"]):
             self.skipTest("Skipping NASDAQ tests in this run")
-        # Call the real NASDAQ live price (no mocking) — may return float or None
-        price = self.provider_nasdaq.get_live_price('AAPL')
-        self.assertTrue(isinstance(price, float) or price is None)
-        self.assertGreater(price, 0)
+        # Call the real NASDAQ live price (no mocking) — returns dict or None
+        result = self.provider_nasdaq.get_live_price('AAPL')
+        self.assertTrue(isinstance(result, dict) or result is None)
+        if result is not None:
+            self.assertIn("price", result)
+            self.assertIn("timestamp", result)
+            self.assertIn("change_percent", result)
+            self.assertGreater(result["price"], 0)
 
 if __name__ == "__main__":
     unittest.main()

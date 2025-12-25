@@ -10,10 +10,11 @@ import yfinance as yf
 from dateutil.parser import parse
 
 
-def get_yfinance_live_price(symbol: str, country: str) -> Optional[float]:
+def get_yfinance_live_price(symbol: str, country: str) -> Optional[dict]:
     """Try live price with possible symbol variants for the given country.
 
-    Returns the latest close price as float, or None if not available.
+    Returns a dict with 'timestamp', 'price', and 'change_percent' (% change from previous day close),
+    or None if not available.
     """
     variants = [symbol]
     if country == "india":
@@ -23,9 +24,18 @@ def get_yfinance_live_price(symbol: str, country: str) -> Optional[float]:
     for s in variants:
         try:
             ticker = yf.Ticker(s)
-            data = ticker.history(period="1d")
+            # Get last 2 days of data to compute % change
+            data = ticker.history(period="2d")
             if not data.empty:
-                return float(data["Close"].iloc[-1])
+                last_close = float(data["Close"].iloc[-1])
+                prev_close = float(data["Close"].iloc[-2]) if len(data) > 1 else last_close
+                change_percent = ((last_close - prev_close) / prev_close * 100) if prev_close != 0 else 0.0
+                timestamp = data.index[-1].isoformat() if hasattr(data.index[-1], 'isoformat') else str(data.index[-1])
+                return {
+                    "timestamp": timestamp,
+                    "price": last_close,
+                    "change_percent": round(change_percent, 2)
+                }
         except Exception:
             continue
     return None

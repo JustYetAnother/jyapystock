@@ -8,9 +8,9 @@ from typing import Optional, Union
 from dateutil.parser import parse
 
 
-def get_nasdaq_live_price(symbol: str, country: str) -> Optional[float]:
+def get_nasdaq_live_price(symbol: str, country: str) -> Optional[dict]:
     """
-    Returns the latest close price as float, or None if not available.
+    Returns a dict with 'timestamp', 'price', and 'change_percent', or None if not available.
     """
     if country != "usa":
         return None  # NASDAQ support only for USA
@@ -34,14 +34,30 @@ def get_nasdaq_live_price(symbol: str, country: str) -> Optional[float]:
                     sec = data_block.get('secondaryData')
                     if sec and sec.get('lastSalePrice'):
                         try:
-                            return float(sec['lastSalePrice'].replace('$', '').replace(',', ''))
+                            price = float(sec['lastSalePrice'].replace('$', '').replace(',', ''))
+                            # Try to get change percent from secondaryData
+                            change_str = sec.get('change', '0')
+                            change_percent = float(change_str) if change_str else 0.0
+                            return {
+                                "timestamp": sec.get('lastTradeTimestamp', ''),
+                                "price": price,
+                                "change_percent": round(change_percent, 2)
+                            }
                         except Exception:
                             pass
 
                     prim = data_block.get('primaryData')
                     if prim and prim.get('lastSalePrice'):
                         try:
-                            return float(prim['lastSalePrice'].replace('$', '').replace(',', ''))
+                            price = float(prim['lastSalePrice'].replace('$', '').replace(',', ''))
+                            # Try to get change percent from primaryData
+                            change_str = prim.get('change', '0')
+                            change_percent = float(change_str) if change_str else 0.0
+                            return {
+                                "timestamp": prim.get('lastTradeTimestamp', ''),
+                                "price": price,
+                                "change_percent": round(change_percent, 2)
+                            }
                         except Exception:
                             pass
         except Exception:

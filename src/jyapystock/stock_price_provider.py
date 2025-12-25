@@ -39,13 +39,14 @@ class StockPriceProvider:
         if self.country not in valid_countries:
             raise ValueError(f"Unknown country: {self.country}. Valid options are: {valid_countries}")
     
-    def get_live_price(self, symbol: str) -> Optional[float]:
+    def get_live_price(self, symbol: str) -> Optional[dict]:
         """
         Get the live price for the given symbol.
         :param symbol: Symbol to fetch the live price for
         :type symbol: str
-        :return: Returns the latest close price as float, or None if not available.
-        :rtype: float | None
+        :return: Returns a dict with 'timestamp', 'price', and 'change_percent' (% change from previous day close),
+                 or None if not available.
+        :rtype: dict | None
         """
         if self.source == "yfinance" or self.source == "auto":
             # Try yfinance first (free), respecting country-specific variants
