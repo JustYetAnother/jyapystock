@@ -2,38 +2,38 @@
 
 A Python library to fetch live and historical prices for Indian and American stocks.
 
-Badges (overall + provider status):
+## Status Badges
 
 [![CI](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci.yml)
 
 [![yfinance tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-yfinance.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-yfinance.yml)
 [![Alpha Vantage tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-alphavantage.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-alphavantage.yml)
 [![NASDAQ tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nasdaq.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nasdaq.yml)
+[![NSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nse.yml)
 
 ## Features
-- Live price and historical price support
-- Indian (NSE/BSE) and American (NYSE/NASDAQ) stocks
-- Multiple data sources: yfinance (default), Alpha Vantage (optional)
- - Multiple data sources: yfinance, Alpha Vantage (optional)
- - Auto-fallback: if `source` is not provided (or set to `None` or `'auto'`), the provider will try available free sources in order: `yfinance` first, then `Alpha Vantage` if an API key is available.
- - Auto-fallback: if `source` is not provided (or set to `None` or `'auto'`), the provider will try available free sources in order: `yfinance` first, then `Alpha Vantage` if an API key is available.
- - Country: `StockPriceProvider` now requires a `country` argument. Supported values: `India`, `USA`.
-	 - For `India`, when using `yfinance` the provider will try symbol variants in this order when the symbol has no exchange suffix: `SYMBOL.NS`, `SYMBOL.BO`, then `SYMBOL`.
+
+- Live price and historical price support with timestamp and % change data
+- Indian (NSE) and American (NYSE/NASDAQ) stocks
+- Multiple data sources: yfinance, NASDAQ, NSE (for India), Alpha Vantage (optional API key)
+- Auto-fallback: tries available sources in order based on country and API key availability
+- Country support: `India` and `USA` with automatic symbol variant detection (e.g., `.NS`, `.BO` for Indian stocks)
 
 ## Installation
+
 ```bash
-pip install -r requirements.txt
+pip install jyapystock
 ```
 
-## Installing as a library (recommended)
+## Installation for Development
 
-This project is intended to be used as a Python library. To install locally (editable/development):
+To install locally for development:
 
 ```bash
-# install editable for development
+# Install editable for development
 pip install -e .
 
-# or install for local use
+# Or install for local use
 pip install .
 ```
 
@@ -44,38 +44,78 @@ pip install -r requirements-dev.txt
 ```
 
 ## Usage
+
+### Basic Usage - USA Stocks
+
 ```python
-from jyapystock.stock_price_provider import StockPriceProvider
-provider = StockPriceProvider(country="USA", source="yfinance")
+from jyapystock import StockPriceProvider
+
+# Using yfinance (default)
+provider = StockPriceProvider(country="USA")
+result = provider.get_live_price("AAPL")
+# Returns: {'timestamp': '2025-12-24T00:00:00-05:00', 'price': 273.81, 'change_percent': 0.53}
+```
+
+### Indian Stocks with NSE
+
+```python
+from jyapystock import StockPriceProvider
+
+# Using NSE (National Stock Exchange)
+provider = StockPriceProvider(country="India", source="nse")
+result = provider.get_live_price("SBIN")
+# Returns: {'timestamp': '24-Dec-2025 16:00:00', 'price': 968.85, 'change_percent': -0.31}
+
+# Using yfinance for India (auto-tries .NS and .BO variants)
+provider = StockPriceProvider(country="India")
+result = provider.get_live_price("RELIANCE")
+```
+
+### Historical Data
+
+```python
+# Get historical prices
 hist = provider.get_historical_price("AAPL", "2023-01-01", "2023-01-31")
+# Returns list of records with date/open/high/low/close/volume
 ```
+
+### Using NASDAQ Provider
 
 ```python
-from jyapystock.stock_price_provider import StockPriceProvider
-provider = StockPriceProvider(country="India", source="yfinance")
-price_in = provider.get_live_price("RELIANCE")
-hist = provider.get_historical_price("RELIANCE", "2023-01-01", "2023-01-31")
+provider = StockPriceProvider(country="USA", source="nasdaq")
+result = provider.get_live_price("AAPL")
 ```
+
+### Using Alpha Vantage (requires API key)
 
 ```python
-# Using Alpha Vantage (requires API key)
-# Auto mode (recommended): omit `source` or set `source=None` / `source='auto'`.
-provider_av = StockPriceProvider(country="USA", source="alphavantage", alpha_vantage_api_key="YOUR_API_KEY")
-price_av = provider_av.get_live_price("AAPL")
-hist_av = provider_av.get_historical_price("AAPL", "2023-01-01", "2023-01-31")
+provider = StockPriceProvider(
+    country="USA", 
+    source="alphavantage", 
+    alpha_vantage_api_key="YOUR_API_KEY"
+)
+result = provider.get_live_price("AAPL")
 ```
-
-Note: `start` and `end` parameters accepted by `get_historical_price` may be either string dates (e.g. `"2023-01-01"`) or `datetime` objects. All providers normalize these inputs internally.
 
 ## Supported Sources
-- **yfinance**: Free, supports most global stocks
-- **Alpha Vantage**: Free tier, requires API key, supports global stocks
-- **Polygon.io, IEX Cloud**: Paid, US stocks (not implemented yet)
+
+- **yfinance**: Free, supports most global stocks (USA & India)
+- **NASDAQ**: Free, USA stocks only
+- **NSE**: Free, Indian stocks only (via National Stock Exchange)
+- **Alpha Vantage**: Free tier with limits, requires API key, supports global stocks
 
 ## Testing
+
 ```bash
 python -m unittest discover tests
+
+# Run provider-specific tests
+PROVIDER=yfinance python -m unittest discover tests
+PROVIDER=nse python -m unittest discover tests
+PROVIDER=nasdaq python -m unittest discover tests
+PROVIDER=alphavantage python -m unittest discover tests
 ```
 
 ## License
+
 MIT
