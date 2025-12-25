@@ -9,6 +9,7 @@ import os
 from jyapystock.alpha_vantage_support import get_alpha_vantage_live_price, get_alpha_vantage_historical_price
 from jyapystock.yfinance_support import get_yfinance_live_price, get_yfinance_historical_prices
 from jyapystock.nasdaq_support import get_nasdaq_live_price, get_nasdaq_historical_prices
+from jyapystock.nse_support import get_nse_live_price, get_nse_historical_prices
 
 class StockPriceProvider:
     def __init__(self, country: str, source: Optional[str] = None, alpha_vantage_api_key: Optional[str] = None):
@@ -29,7 +30,7 @@ class StockPriceProvider:
 
     def check_source_validity(self):
         """Check if the provided source is valid."""
-        valid_sources = ["yfinance", "alphavantage", "nasdaq", "auto"]
+        valid_sources = ["yfinance", "alphavantage", "nasdaq", "nse", "auto"]
         if self.source not in valid_sources:
             raise ValueError(f"Unknown source: {self.source}. Valid options are: {valid_sources}")
 
@@ -53,6 +54,13 @@ class StockPriceProvider:
             val = get_yfinance_live_price(symbol, self.country)
             if val is not None:
                 return val
+        
+        # Try NSE for India stocks
+        if (self.source == "nse" or self.source == "auto") and self.country == "india":
+            val = get_nse_live_price(symbol)
+            if val is not None:
+                return val
+        
         # Try NASDAQ-specific provider for USA symbols
         if (self.source == "nasdaq" or self.source == "auto") and self.country == "usa":
             val = get_nasdaq_live_price(symbol, self.country)
@@ -71,10 +79,16 @@ class StockPriceProvider:
         return None
 
     def get_historical_price(self, symbol: str, start: Union[str, datetime], end: Union[str, datetime]) -> Optional[list]:
-        # Auto mode: try yfinance first, then Alpha Vantage if available
+        # Auto mode: try yfinance first, then NSE for India, then Alpha Vantage if available
         if self.source == "yfinance" or self.source == "auto":
             # Try yfinance first (respecting country-specific variants)
             val = get_yfinance_historical_prices(symbol, start, end, self.country)
+            if val is not None:
+                return val
+        
+        # NSE for India stocks
+        if (self.source == "nse" or self.source == "auto") and self.country == "india":
+            val = get_nse_historical_prices(symbol, start, end)
             if val is not None:
                 return val
         
