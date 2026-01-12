@@ -7,9 +7,10 @@ from datetime import datetime
 from typing import Optional, Union
 import os
 from jyapystock.alpha_vantage_support import get_alpha_vantage_live_price, get_alpha_vantage_historical_price
-from jyapystock.yfinance_support import get_yfinance_live_price, get_yfinance_historical_prices
+from jyapystock.yfinance_support import get_yfinance_live_price, get_yfinance_historical_prices, get_yfinance_stock_info
 from jyapystock.nasdaq_support import get_nasdaq_live_price, get_nasdaq_historical_prices
 from jyapystock.nse_support import get_nse_live_price, get_nse_historical_prices
+from jyapystock.nyse_support import get_nyse_live_price, get_nyse_historical_prices
 
 class StockPriceProvider:
     def __init__(self, country: str, source: Optional[str] = None, alpha_vantage_api_key: Optional[str] = None):
@@ -30,7 +31,7 @@ class StockPriceProvider:
 
     def check_source_validity(self):
         """Check if the provided source is valid."""
-        valid_sources = ["yfinance", "alphavantage", "nasdaq", "nse", "auto"]
+        valid_sources = ["yfinance", "alphavantage", "nasdaq", "nse", "nyse", "auto"]
         if self.source not in valid_sources:
             raise ValueError(f"Unknown source: {self.source}. Valid options are: {valid_sources}")
 
@@ -75,6 +76,11 @@ class StockPriceProvider:
                 if val is not None:
                     return val
 
+        # Try NYSE-specific provider for USA symbols
+        if (self.source == "nyse" or self.source == "auto") and self.country == "usa":
+            val = get_nyse_live_price(symbol)
+            if val is not None:
+                return val
         # No sources returned a price
         return None
 
@@ -104,9 +110,20 @@ class StockPriceProvider:
                 val = get_alpha_vantage_historical_price(symbol, start, end, av_key)
                 if val is not None:
                     return val
-
+        
+        # NYSE historical provider (USA)
+        if (self.source == "nyse" or self.source == "auto") and self.country == "usa":
+            val = get_nyse_historical_prices(symbol, start, end, self.country)
+            if val is not None:
+                return val
         return None
 
+    def get_stock_info(self, symbol: str) -> Optional[dict]:
+        if self.source == "yfinance" or self.source == "auto":
+            val = get_yfinance_stock_info(symbol)
+            if val is not None:
+                return val
+        return None
 
 # Example usage:
 # provider = StockPriceProvider()

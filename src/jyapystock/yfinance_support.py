@@ -68,7 +68,64 @@ def get_yfinance_historical_prices(symbol: str, start: Union[str, datetime], end
                 df = data.reset_index()
                 df = df[["Date", "Open", "High", "Low", "Close", "Volume"]]
                 df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
+                # change all fields to lowercase for consistency
+                df.columns = [col.lower() for col in df.columns]
                 return df.to_dict("records")
         except Exception:
             continue
     return None
+
+def _get_value(info: dict, key: str) -> Optional[object]:
+    return info.get(key)
+
+def get_yfinance_stock_info(symbol: str) -> Optional[dict]:
+    try:
+        stock = yf.Ticker(symbol)
+        info = stock.info or {}
+        history = stock.history(period="1y")
+
+        market_cap = _get_value(info, "marketCap")
+        ma_20 = _moving_average(history, 20)
+        ma_50 = _moving_average(history, 50)
+        ma_200 = _moving_average(history, 200)
+
+        return {
+            "symbol": info.get("symbol", symbol.upper()),
+            "name": _get_value(info, "shortName"),
+            "currency": _get_value(info, "currency"),
+            "current_price": _get_value(info, "currentPrice"),
+            "week_52_high": _get_value(info, "fiftyTwoWeekHigh"),
+            "week_52_low": _get_value(info, "fiftyTwoWeekLow"),
+            "trailing_pe": _get_value(info, "trailingPE"),
+            "forward_pe": _get_value(info, "forwardPE"),
+            "market_cap": market_cap,
+            "market_cap_type": _market_cap_type(market_cap),
+            "dividend_yield": _get_value(info, "dividendYield"),
+            "moving_average_20": ma_20,
+            "moving_average_50": ma_50,
+            "moving_average_200": ma_200,
+        }
+    except Exception as ex:
+        print(f"Exception {ex}. Failed to fetch data for symbol: {symbol}")
+        return None
+
+def _market_cap_type(market_cap: Optional[object]) -> str:
+    if not isinstance(market_cap, (int, float)):
+        return "N/A"
+
+    if market_cap < 2_000_000_000:
+        return "small_cap"
+    if market_cap < 10_000_000_000:
+        return "mid_cap"
+    if market_cap < 200_000_000_000:
+        return "large_cap"
+    return "mega_cap"
+
+
+def _moving_average(history, window: int) -> Optional[float]:
+    if history is None or history.empty or "Close" not in history:
+        return None
+    series = history["Close"].dropna()
+    if series.empty:
+        return None
+    return float(series.rolling(window=window).mean().iloc[-1])

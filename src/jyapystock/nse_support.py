@@ -4,6 +4,7 @@ Provides helper functions to fetch live and historical prices for Indian stocks.
 """
 
 from nse import NSE
+import logging
 import tempfile
 from typing import Optional, Union
 from datetime import datetime
@@ -82,7 +83,7 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
         
         nse = _get_nse_instance()
         # fetch_equity_historical_data returns historical data
-        data = nse.fetch_equity_historical_data(symbol, start_date=str(start_dt), end_date=str(end_dt))
+        data = nse.fetch_equity_historical_data(symbol, from_date=start_dt, to_date=end_dt)
         
         if not data or isinstance(data, str):
             # Data might be an error string or None
@@ -95,11 +96,11 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
             for idx, row in data.iterrows():
                 records.append({
                     'date': str(row.get('Date', idx)),
-                    'Open': row.get('Open'),
-                    'High': row.get('High'),
-                    'Low': row.get('Low'),
-                    'Close': row.get('Close'),
-                    'Volume': row.get('Volume')
+                    'open': row.get('Open'),
+                    'high': row.get('High'),
+                    'low': row.get('Low'),
+                    'close': row.get('Close'),
+                    'volume': row.get('Volume')
                 })
         elif isinstance(data, dict):
             # Already a dict
@@ -109,5 +110,6 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
             records = list(data) if hasattr(data, '__iter__') else [data]
         
         return records if records else None
-    except Exception:
+    except Exception as e:
+        logging.error(f"Error fetching historical prices for {symbol} from NSE: {str(e)}")
         return None

@@ -3,10 +3,13 @@ NASDAQ support for jyapystock.
 Provides helper functions to fetch live and historical prices from Nasdaq's public API.
 """
 import requests
+import logging
 from datetime import datetime
 from typing import Optional, Union
 from dateutil.parser import parse
 
+# Standard naming convention for library loggers
+logger = logging.getLogger(__name__)
 
 def get_nasdaq_live_price(symbol: str, country: str) -> Optional[dict]:
     """
@@ -59,9 +62,11 @@ def get_nasdaq_live_price(symbol: str, country: str) -> Optional[dict]:
                                 "change_percent": round(change_percent, 2)
                             }
                         except Exception:
-                            pass
-        except Exception:
-            continue
+                            logger.error(f"Error parsing price for {symbol} from primaryData: {prim.get('lastSalePrice')}")
+            else:
+                logger.error(f"Failed to fetch live price for {symbol} from NASDAQ API. Status code: {get_response.status_code}")
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching live price for {symbol} from NASDAQ API: {str(e)}")
     return None
 
 
@@ -103,6 +108,9 @@ def get_nasdaq_historical_prices(symbol: str, start: Union[str, datetime], end: 
                 json_data = get_response.json()
                 if 'data' in json_data and 'tradesTable' in json_data['data']:
                     rows = json_data['data']['tradesTable']['rows']
+                    if not rows:
+                        logger.error(f"No historical data found for {symbol} in NASDAQ API response {json_data}.")
+                        continue
                     records = []
                     for row in rows:
                         try:
@@ -121,18 +129,22 @@ def get_nasdaq_historical_prices(symbol: str, start: Union[str, datetime], end: 
 
                             records.append({
                                 'date': str(cdate),
-                                'Open': open_v,
-                                'High': high,
-                                'Low': low,
-                                'Close': close,
-                                'Volume': volume
+                                'open': open_v,
+                                'high': high,
+                                'low': low,
+                                'close': close,
+                                'volume': volume
                             })
                         except Exception:
-                            continue
+                            logger.error(f"Error parsing historical price record for {symbol}: {row}")
 
                     return records
-        except Exception:
-            continue
+                else:
+                    logger.error(f"No historical data found for {symbol} in NASDAQ API response {json_data}.")
+            else:
+                logger.error(f"Failed to fetch historical prices for {symbol} from NASDAQ API. Status code: {get_response.status_code}")
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching historical prices for {symbol} from NASDAQ API: {str(e)}")
 
     return None
     
@@ -145,5 +157,5 @@ def get_float_or_none_from_string(input):
             res = float(input)
             return res
         except Exception as e:
-            pass
+            logger.error(f"Error converting string to float: '{input}' - {str(e)}")
     return None

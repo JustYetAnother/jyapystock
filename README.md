@@ -9,6 +9,7 @@ A Python library to fetch live and historical prices for Indian and American sto
 [![yfinance tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-yfinance.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-yfinance.yml)
 [![Alpha Vantage tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-alphavantage.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-alphavantage.yml)
 [![NASDAQ tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nasdaq.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nasdaq.yml)
+[![NYSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nyse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nyse.yml)
 [![NSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nse.yml)
 
 ## Features
@@ -103,6 +104,7 @@ result = provider.get_live_price("AAPL")
 - **NASDAQ**: Free, USA stocks only
 - **NSE**: Free, Indian stocks only (via National Stock Exchange)
 - **Alpha Vantage**: Free tier with limits, requires API key, supports global stocks
+- **NYSE**: Free, USA stocks only
 
 ## Testing
 
