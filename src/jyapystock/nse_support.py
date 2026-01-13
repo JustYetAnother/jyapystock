@@ -95,19 +95,39 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
             # It's a pandas DataFrame
             for idx, row in data.iterrows():
                 records.append({
-                    'date': str(row.get('Date', idx)),
-                    'open': row.get('Open'),
-                    'high': row.get('High'),
-                    'low': row.get('Low'),
-                    'close': row.get('Close'),
-                    'volume': row.get('Volume')
+                    'date': str(row.get('mtimestamp', idx)),
+                    'open': row.get('chOpeningPrice'),
+                    'high': row.get('chTradeHighPrice'),
+                    'low': row.get('chTradeLowPrice'),
+                    'close': row.get('chClosingPrice'),
+                    'volume': row.get('chTotTradedVal')
                 })
         elif isinstance(data, dict):
             # Already a dict
-            records.append(data)
+            records = [
+                {
+                    'date': item['mtimestamp'],
+                    'close': item['chClosingPrice'],
+                    'open': item['chOpeningPrice'],
+                    'high': item['chTradeHighPrice'],
+                    'low': item['chTradeLowPrice'],
+                    'volume': item['chTotTradedVal']
+                } 
+                for item in data
+            ]
         else:
             # List of records
-            records = list(data) if hasattr(data, '__iter__') else [data]
+            records = [
+                {
+                    'date': item['mtimestamp'],
+                    'close': item['chClosingPrice'],
+                    'open': item['chOpeningPrice'],
+                    'high': item['chTradeHighPrice'],
+                    'low': item['chTradeLowPrice'],
+                    'volume': item['chTotTradedVal']
+                } 
+                for item in data
+            ]
         
         return records if records else None
     except Exception as e:

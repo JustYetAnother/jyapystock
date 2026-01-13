@@ -20,9 +20,10 @@ source .venv/bin/activate
 python -m pip install --upgrade pip build twine
 ```
 
-3. Build source and wheel
+3. Remove any previous versions and build source and wheel
 
 ```bash
+rm -rf dist build *.egg-info
 python -m build
 # outputs are in dist/ e.g. dist/jyapystock-0.1.0-py3-none-any.whl
 ```

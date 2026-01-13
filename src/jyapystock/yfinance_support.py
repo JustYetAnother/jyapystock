@@ -18,7 +18,7 @@ def get_yfinance_live_price(symbol: str, country: str) -> Optional[dict]:
     """
     variants = [symbol]
     if country == "india":
-        if "." not in symbol:
+        if "." not in symbol and "^" not in symbol: # Avoid adding suffixes to indices or already suffixed symbols
             variants = [f"{symbol}.NS", f"{symbol}.BO", symbol]
 
     for s in variants:

@@ -107,7 +107,11 @@ result = provider.get_live_price("AAPL")
 - **NYSE**: Free, USA stocks only
 
 ## Testing
-
+Install library in editable mode
+```bash
+pip install -e .
+```
+Run tests
 ```bash
 python -m unittest discover tests
 
