@@ -95,7 +95,7 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
             # It's a pandas DataFrame
             for idx, row in data.iterrows():
                 records.append({
-                    'date': str(row.get('mtimestamp', idx)),
+                    'date': change_date_format(str(row.get('mtimestamp', idx))),
                     'open': row.get('chOpeningPrice'),
                     'high': row.get('chTradeHighPrice'),
                     'low': row.get('chTradeLowPrice'),
@@ -106,7 +106,7 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
             # Already a dict
             records = [
                 {
-                    'date': item['mtimestamp'],
+                    'date': change_date_format(item['mtimestamp']),
                     'close': item['chClosingPrice'],
                     'open': item['chOpeningPrice'],
                     'high': item['chTradeHighPrice'],
@@ -119,7 +119,7 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
             # List of records
             records = [
                 {
-                    'date': item['mtimestamp'],
+                    'date': change_date_format(item['mtimestamp']),
                     'close': item['chClosingPrice'],
                     'open': item['chOpeningPrice'],
                     'high': item['chTradeHighPrice'],
@@ -133,3 +133,12 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
     except Exception as e:
         logging.error(f"Error fetching historical prices for {symbol} from NSE: {str(e)}")
         return None
+
+def change_date_format(date_str: str) -> str:
+    """Convert date to 'yyyy-mm-dd' format."""
+    try:
+        dt = parse(date_str).date()
+        return dt.strftime("%Y-%m-%d")
+    except Exception as e:
+        logging.error(f"Error converting date format: {str(e)}")
+        return date_str  # Return original if conversion fails

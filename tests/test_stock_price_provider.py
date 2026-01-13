@@ -1,3 +1,4 @@
+import datetime
 import unittest
 from jyapystock.stock_price_provider import StockPriceProvider
 import os
@@ -43,13 +44,7 @@ class TestStockPriceProvider(unittest.TestCase):
         hist = self.provider_yf.get_historical_price("AAPL", "2023-01-01", "2023-01-10")
         self.assertIsInstance(hist, list)
         self.assertGreater(len(hist), 0)
-        for record in hist:
-            self.assertIn("date", record)
-            self.assertIn("open", record)
-            self.assertIn("high", record)
-            self.assertIn("low", record)
-            self.assertIn("close", record)
-            self.assertIn("volume", record)
+        self.common_historical_price_test(hist)
     
     def test_live_price_yfinance_india(self):
         if not should_run_for(["yfinance"]):
@@ -67,13 +62,7 @@ class TestStockPriceProvider(unittest.TestCase):
         hist = self.provider_yf_india.get_historical_price("RELIANCE", "2023-01-01", "2023-01-10")
         self.assertIsInstance(hist, list)
         self.assertGreater(len(hist), 0)
-        for record in hist:
-            self.assertIn("date", record)
-            self.assertIn("open", record)
-            self.assertIn("high", record)
-            self.assertIn("low", record)
-            self.assertIn("close", record)
-            self.assertIn("volume", record)
+        self.common_historical_price_test(hist)
     
     def test_get_stock_info_yfinance(self):
         if not should_run_for(["yfinance"]):
@@ -129,7 +118,9 @@ class TestStockPriceProvider(unittest.TestCase):
         provider_auto = StockPriceProvider(country="USA", source="auto")
         hist = provider_auto.get_historical_price("AAPL", "2023-01-01", "2023-01-10")
         # historical can be list or None depending on source availability
-        self.assertTrue(isinstance(hist, list) or hist is None)
+        self.assertTrue(isinstance(hist, list))
+        self.assertGreater(len(hist), 0)
+        self.common_historical_price_test(hist)
 
     def test_get_stock_info_auto(self):
         if not should_run_for(["yfinance"]):
@@ -158,7 +149,9 @@ class TestStockPriceProvider(unittest.TestCase):
             self.skipTest("Skipping India/yfinance tests in this run")
         provider_in = StockPriceProvider(country="India")
         hist = provider_in.get_historical_price("RELIANCE", "2023-01-01", "2023-01-10")
-        self.assertTrue(isinstance(hist, list) or hist is None)
+        self.assertTrue(isinstance(hist, list))
+        self.assertGreater(len(hist), 0)
+        self.common_historical_price_test(hist)
 
     def test_historical_price_nasdaq(self):
         if not should_run_for(["nasdaq"]):
@@ -168,13 +161,7 @@ class TestStockPriceProvider(unittest.TestCase):
         # Should be a list of records or None depending on network/API
         self.assertTrue(isinstance(hist, list))
         self.assertGreater(len(hist), 0)
-        for record in hist:
-            self.assertIn("date", record)
-            self.assertIn("open", record)
-            self.assertIn("high", record)
-            self.assertIn("low", record)
-            self.assertIn("close", record)
-            self.assertIn("volume", record)
+        self.common_historical_price_test(hist)
     
     def test_live_price_nasdaq(self):
         if not should_run_for(["nasdaq"]):
@@ -204,13 +191,7 @@ class TestStockPriceProvider(unittest.TestCase):
         hist = self.provider_nse.get_historical_price('INFY', '2025-12-17', '2025-12-24')
         self.assertTrue(isinstance(hist, list))
         self.assertGreater(len(hist), 0)
-        for record in hist:
-            self.assertIn("date", record)
-            self.assertIn("open", record)
-            self.assertIn("high", record)
-            self.assertIn("low", record)
-            self.assertIn("close", record)
-            self.assertIn("volume", record)
+        self.common_historical_price_test(hist)
 
     def test_historical_price_nyse(self):
         if not should_run_for(["nyse"]):
@@ -220,13 +201,7 @@ class TestStockPriceProvider(unittest.TestCase):
         # Should be a list of records or None depending on network/API
         self.assertTrue(isinstance(hist, list))
         self.assertGreater(len(hist), 0)
-        for record in hist:
-            self.assertIn("date", record)
-            self.assertIn("open", record)
-            self.assertIn("high", record)
-            self.assertIn("low", record)
-            self.assertIn("close", record)
-            self.assertIn("volume", record)
+        self.common_historical_price_test(hist)
 
     def test_live_price_nyse(self):
         if not should_run_for(["nyse"]):
@@ -239,6 +214,26 @@ class TestStockPriceProvider(unittest.TestCase):
             self.assertIn("timestamp", result)
             self.assertIn("change_percent", result)
             self.assertGreater(result["price"], 0)
+    
+    @classmethod
+    def common_historical_price_test(cls, records):
+        for record in records:
+            assert "date" in record
+            assert "open" in record
+            assert "high" in record
+            assert "low" in record
+            assert "close" in record
+            assert "volume" in record
+            # assert date format is 'yyyy-mm-dd'
+            try:
+                datetime.datetime.strptime(record["date"], "%Y-%m-%d")
+            except ValueError:
+                raise AssertionError(f"Date format incorrect: {record['date']}")
+            assert isinstance(record["open"], (int, float))
+            assert isinstance(record["high"], (int, float))
+            assert isinstance(record["low"], (int, float))
+            assert isinstance(record["close"], (int, float))
+            assert isinstance(record["volume"], (int, float))
 
 if __name__ == "__main__":
     unittest.main()
