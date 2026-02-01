@@ -10,7 +10,7 @@ description = "Fetch live and historical stock prices for Indian and American ex
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [ { name = "krishna" } ]
-license = { text = "MIT" }
+license = "MIT"
 
 # Minimal runtime dependencies. Use compatible ranges for library consumption.
 dependencies = [
@@ -25,7 +25,6 @@ maintainers = [ { name = "krishna" } ]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.8",
