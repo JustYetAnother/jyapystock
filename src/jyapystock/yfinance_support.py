@@ -10,16 +10,25 @@ import yfinance as yf
 from dateutil.parser import parse
 
 
+
+def get_symbol_variants(symbol: str, country: str) -> list:
+    """Generate possible symbol variants based on country conventions."""
+    variants = [symbol]
+    if country == "india":
+        if "." not in symbol and "^" not in symbol: # Avoid adding suffixes to indices or already suffixed symbols
+            variants = [f"{symbol}.NS", f"{symbol}.BO", symbol]
+    elif country == "usa":
+        if "." in symbol:
+            variants = [symbol.replace(".", "-"), symbol]
+    return variants
+
 def get_yfinance_live_price(symbol: str, country: str) -> Optional[dict]:
     """Try live price with possible symbol variants for the given country.
 
     Returns a dict with 'timestamp', 'price', and 'change_percent' (% change from previous day close),
     or None if not available.
     """
-    variants = [symbol]
-    if country == "india":
-        if "." not in symbol and "^" not in symbol: # Avoid adding suffixes to indices or already suffixed symbols
-            variants = [f"{symbol}.NS", f"{symbol}.BO", symbol]
+    variants = get_symbol_variants(symbol, country)
 
     for s in variants:
         try:
@@ -46,10 +55,8 @@ def get_yfinance_historical_prices(symbol: str, start: Union[str, datetime], end
 
     Returns a list of records with Open/High/Low/Close/Volume or None if not found.
     """
-    variants = [symbol]
-    if country == "india":
-        if "." not in symbol:
-            variants = [f"{symbol}.NS", f"{symbol}.BO", symbol]
+    variants = get_symbol_variants(symbol, country)
+
     # Normalize start/end if strings are passed
     try:
         start_dt = parse(start) if isinstance(start, str) else start
@@ -78,7 +85,15 @@ def get_yfinance_historical_prices(symbol: str, start: Union[str, datetime], end
 def _get_value(info: dict, key: str) -> Optional[object]:
     return info.get(key)
 
-def get_yfinance_stock_info(symbol: str) -> Optional[dict]:
+def get_yfinance_stock_info(symbol: str, country: str) -> Optional[dict]:
+    variants = get_symbol_variants(symbol, country)
+    for s in variants:
+        info = _fetch_stock_info(s)
+        if info is not None:
+            return info
+    return None
+
+def _fetch_stock_info(symbol: str) -> Optional[dict]:
     try:
         stock = yf.Ticker(symbol)
         info = stock.info or {}

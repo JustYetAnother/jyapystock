@@ -37,6 +37,13 @@ class TestStockPriceProvider(unittest.TestCase):
         self.assertIn("timestamp", result)
         self.assertIn("change_percent", result)
         self.assertGreater(result["price"], 0)
+        # special case for symbol with dot
+        result_dot = self.provider_yf.get_live_price("BRK.B")
+        self.assertIsInstance(result_dot, dict)
+        self.assertIn("price", result_dot)
+        self.assertIn("timestamp", result_dot)
+        self.assertIn("change_percent", result_dot)
+        self.assertGreater(result_dot["price"], 0)
 
     def test_historical_price_yfinance(self):
         if not should_run_for(["yfinance"]):
@@ -157,7 +164,10 @@ class TestStockPriceProvider(unittest.TestCase):
         if not should_run_for(["nasdaq"]):
             self.skipTest("Skipping NASDAQ tests in this run")
         # Call the real NASDAQ provider (no mocking) — result may be None if API unavailable
-        hist = self.provider_nasdaq.get_historical_price('AAPL', '2025-12-17', '2025-12-22')
+        today = datetime.date.today()
+        thirty_days_ago = today - datetime.timedelta(days=30)
+        twenty_days_ago = today - datetime.timedelta(days=20)
+        hist = self.provider_nasdaq.get_historical_price('AAPL', thirty_days_ago.isoformat(), twenty_days_ago.isoformat())
         # Should be a list of records or None depending on network/API
         self.assertTrue(isinstance(hist, list))
         self.assertGreater(len(hist), 0)

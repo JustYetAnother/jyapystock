@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jyapystock"
-version = "0.3.2"
+version = "0.3.3"
 description = "Fetch live and historical stock prices for Indian and American exchanges."
 readme = "README.md"
 requires-python = ">=3.8"

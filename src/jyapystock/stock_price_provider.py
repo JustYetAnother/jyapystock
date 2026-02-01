@@ -120,7 +120,7 @@ class StockPriceProvider:
 
     def get_stock_info(self, symbol: str) -> Optional[dict]:
         if self.source == "yfinance" or self.source == "auto":
-            val = get_yfinance_stock_info(symbol)
+            val = get_yfinance_stock_info(symbol, self.country)
             if val is not None:
                 return val
         return None
