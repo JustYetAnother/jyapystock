@@ -106,7 +106,7 @@ def get_nasdaq_historical_prices(symbol: str, start: Union[str, datetime], end: 
             get_response = requests.get(url, headers=headers, timeout=10)
             if get_response and get_response.status_code == 200:
                 json_data = get_response.json()
-                if 'data' in json_data and 'tradesTable' in json_data['data']:
+                if 'data' in json_data and json_data['data'] and 'tradesTable' in json_data['data']:
                     rows = json_data['data']['tradesTable']['rows']
                     if not rows:
                         logger.error(f"No historical data found for {symbol} in NASDAQ API response {json_data}.")

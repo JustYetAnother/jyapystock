@@ -23,6 +23,7 @@ class TestStockPriceProvider(unittest.TestCase):
         self.provider_yf_india = StockPriceProvider(country="India", source="yfinance")
         self.provider_nasdaq = StockPriceProvider(country="USA", source="nasdaq")
         self.provider_nse = StockPriceProvider(country="India", source="nse")
+        self.provider_bse = StockPriceProvider(country="India", source="bse")
         self.provider_nyse = StockPriceProvider(country="USA", source="nyse")
         self.provider_auto = StockPriceProvider(country="USA", source="auto")
         self.provider_auto_india = StockPriceProvider(country="India", source="auto")
@@ -199,6 +200,25 @@ class TestStockPriceProvider(unittest.TestCase):
         if not should_run_for(["nse"]):
             self.skipTest("Skipping NSE tests in this run")
         hist = self.provider_nse.get_historical_price('INFY', '2025-12-17', '2025-12-24')
+        self.assertTrue(isinstance(hist, list))
+        self.assertGreater(len(hist), 0)
+        self.common_historical_price_test(hist)
+
+    def test_live_price_bse(self):
+        if not should_run_for(["bse"]):
+            self.skipTest("Skipping BSE tests in this run")
+        # Call the real BSE live price (no mocking) — returns dict or None
+        result = self.provider_bse.get_live_price('NSDL')
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
+
+    def test_historical_price_bse(self):
+        if not should_run_for(["bse"]):
+            self.skipTest("Skipping BSE tests in this run")
+        hist = self.provider_bse.get_historical_price('NSDL', '2025-12-17', '2025-12-24')
         self.assertTrue(isinstance(hist, list))
         self.assertGreater(len(hist), 0)
         self.common_historical_price_test(hist)

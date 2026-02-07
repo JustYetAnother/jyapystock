@@ -11,6 +11,7 @@ A Python library to fetch live and historical prices for Indian and American sto
 [![NASDAQ tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nasdaq.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nasdaq.yml)
 [![NYSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nyse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nyse.yml)
 [![NSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nse.yml)
+[![BSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-bse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-bse.yml)
 
 ## Features
 
@@ -98,13 +99,40 @@ provider = StockPriceProvider(
 result = provider.get_live_price("AAPL")
 ```
 
+### Multiple Providers with Fallback
+
+You can specify multiple sources as a list. The provider will try them in order until one returns data:
+
+```python
+# Try NSE first, then fall back to yfinance for Indian stocks
+provider = StockPriceProvider(country="India", source=["nse", "yfinance"])
+result = provider.get_live_price("RELIANCE")
+
+# Try NASDAQ first, then NASDAQ, then yfinance for USA stocks
+provider = StockPriceProvider(country="USA", source=["nasdaq", "yfinance"])
+result = provider.get_live_price("AAPL")
+
+# Try BSE for historical data, fall back to yfinance
+provider = StockPriceProvider(country="India", source=["bse", "yfinance"])
+hist = provider.get_historical_price("NSDL", "2025-12-01", "2025-12-31")
+```
+
+You can also pass a single provider as a string:
+
+```python
+# Equivalent to source=["bse"]
+provider = StockPriceProvider(country="India", source="bse")
+result = provider.get_live_price("NSDL")
+```
+
 ## Supported Sources
 
 - **yfinance**: Free, supports most global stocks (USA & India)
 - **NASDAQ**: Free, USA stocks only
-- **NSE**: Free, Indian stocks only (via National Stock Exchange)
-- **Alpha Vantage**: Free tier with limits, requires API key, supports global stocks
 - **NYSE**: Free, USA stocks only
+- **NSE**: Free, Indian stocks only (via National Stock Exchange)
+- **BSE**: Free, Indian stocks only (via Bombay Stock Exchange)
+- **Alpha Vantage**: Free tier with limits, requires API key, supports global stocks
 
 ## Testing
 Install library in editable mode
@@ -118,6 +146,7 @@ python -m unittest discover tests
 # Run provider-specific tests
 PROVIDER=yfinance python -m unittest discover tests
 PROVIDER=nse python -m unittest discover tests
+PROVIDER=bse python -m unittest discover tests
 PROVIDER=nasdaq python -m unittest discover tests
 PROVIDER=alphavantage python -m unittest discover tests
 ```
