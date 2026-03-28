@@ -27,6 +27,10 @@ class TestStockPriceProvider(unittest.TestCase):
         self.provider_nyse = StockPriceProvider(country="USA", source="nyse")
         self.provider_auto = StockPriceProvider(country="USA", source="auto")
         self.provider_auto_india = StockPriceProvider(country="India", source="auto")
+        self.provider_yf_nse = StockPriceProvider(country="India", source="yfinance", exchange="NSE")
+        self.provider_yf_bse = StockPriceProvider(country="India", source="yfinance", exchange="BSE")
+        self.provider_yf_nasdaq = StockPriceProvider(country="USA", source="yfinance", exchange="NASDAQ")
+        self.provider_yf_nyse = StockPriceProvider(country="USA", source="yfinance", exchange="NYSE")
         logging.basicConfig(level=logging.WARNING)
     
     def test_live_price_yfinance(self):
@@ -244,6 +248,46 @@ class TestStockPriceProvider(unittest.TestCase):
             self.assertIn("timestamp", result)
             self.assertIn("change_percent", result)
             self.assertGreater(result["price"], 0)
+    
+    def test_live_price_yf_nse(self):
+        if not should_run_for(["yfinance"]):
+            self.skipTest("Skipping yfinance tests in this run")
+        result = self.provider_yf_nse.get_live_price("BSE")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
+    
+    def test_live_price_yf_bse(self):
+        if not should_run_for(["yfinance"]):
+            self.skipTest("Skipping yfinance tests in this run")
+        result = self.provider_yf_bse.get_live_price("NSDL")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
+    
+    def test_live_price_yf_nasdaq(self):
+        if not should_run_for(["yfinance"]):
+            self.skipTest("Skipping yfinance tests in this run")
+        result = self.provider_yf_nasdaq.get_live_price("AAPL")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
+    
+    def test_live_price_yf_nyse(self):
+        if not should_run_for(["yfinance"]):
+            self.skipTest("Skipping yfinance tests in this run")
+        result = self.provider_yf_nyse.get_live_price("CVX")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
     
     @classmethod
     def common_historical_price_test(cls, records):

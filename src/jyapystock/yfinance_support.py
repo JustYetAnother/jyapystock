@@ -11,24 +11,29 @@ from dateutil.parser import parse
 
 
 
-def get_symbol_variants(symbol: str, country: str) -> list:
+def get_symbol_variants(symbol: str, country: str, exchange:Optional[str] = None) -> list:
     """Generate possible symbol variants based on country conventions."""
     variants = [symbol]
     if country == "india":
         if "." not in symbol and "^" not in symbol: # Avoid adding suffixes to indices or already suffixed symbols
-            variants = [f"{symbol}.NS", f"{symbol}.BO", symbol]
+            if exchange and exchange == "nse":
+                variants = [f"{symbol}.NS", symbol]
+            elif exchange and exchange == "bse":
+                variants = [f"{symbol}.BO", symbol]
+            else:
+                variants = [f"{symbol}.NS", f"{symbol}.BO", symbol]
     elif country == "usa":
         if "." in symbol:
             variants = [symbol.replace(".", "-"), symbol]
     return variants
 
-def get_yfinance_live_price(symbol: str, country: str) -> Optional[dict]:
+def get_yfinance_live_price(symbol: str, country: str, exchange:Optional[str] = None) -> Optional[dict]:
     """Try live price with possible symbol variants for the given country.
 
     Returns a dict with 'timestamp', 'price', and 'change_percent' (% change from previous day close),
     or None if not available.
     """
-    variants = get_symbol_variants(symbol, country)
+    variants = get_symbol_variants(symbol, country, exchange)
 
     for s in variants:
         try:
@@ -50,12 +55,12 @@ def get_yfinance_live_price(symbol: str, country: str) -> Optional[dict]:
     return None
 
 
-def get_yfinance_historical_prices(symbol: str, start: Union[str, datetime], end: Union[str, datetime], country: str) -> Optional[list]:
+def get_yfinance_historical_prices(symbol: str, start: Union[str, datetime], end: Union[str, datetime], country: str, exchange:Optional[str] = None) -> Optional[list]:
     """Try historical price retrieval with symbol variants.
 
     Returns a list of records with Open/High/Low/Close/Volume or None if not found.
     """
-    variants = get_symbol_variants(symbol, country)
+    variants = get_symbol_variants(symbol, country, exchange)
 
     # Normalize start/end if strings are passed
     try:
@@ -85,8 +90,8 @@ def get_yfinance_historical_prices(symbol: str, start: Union[str, datetime], end
 def _get_value(info: dict, key: str) -> Optional[object]:
     return info.get(key)
 
-def get_yfinance_stock_info(symbol: str, country: str) -> Optional[dict]:
-    variants = get_symbol_variants(symbol, country)
+def get_yfinance_stock_info(symbol: str, country: str, exchange:Optional[str] = None) -> Optional[dict]:
+    variants = get_symbol_variants(symbol, country, exchange)
     for s in variants:
         info = _fetch_stock_info(s)
         if info is not None:
