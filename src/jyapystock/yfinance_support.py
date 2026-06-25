@@ -5,17 +5,16 @@ and to try country-specific symbol variants (e.g., .NS/.BO for India).
 """
 
 from datetime import datetime
-from typing import Optional, Union
+
 import yfinance as yf
 from dateutil.parser import parse
 
 
-
-def get_symbol_variants(symbol: str, country: str, exchange:Optional[str] = None) -> list:
+def get_symbol_variants(symbol: str, country: str, exchange: str | None = None) -> list:
     """Generate possible symbol variants based on country conventions."""
     variants = [symbol]
     if country == "india":
-        if "." not in symbol and "^" not in symbol: # Avoid adding suffixes to indices or already suffixed symbols
+        if "." not in symbol and "^" not in symbol:  # Avoid adding suffixes to indices or already suffixed symbols
             if exchange and exchange == "nse":
                 variants = [f"{symbol}.NS", symbol]
             elif exchange and exchange == "bse":
@@ -27,7 +26,8 @@ def get_symbol_variants(symbol: str, country: str, exchange:Optional[str] = None
             variants = [symbol.replace(".", "-"), symbol]
     return variants
 
-def get_yfinance_live_price(symbol: str, country: str, exchange:Optional[str] = None) -> Optional[dict]:
+
+def get_yfinance_live_price(symbol: str, country: str, exchange: str | None = None) -> dict | None:
     """Try live price with possible symbol variants for the given country.
 
     Returns a dict with 'timestamp', 'price', and 'change_percent' (% change from previous day close),
@@ -38,24 +38,24 @@ def get_yfinance_live_price(symbol: str, country: str, exchange:Optional[str] = 
     for s in variants:
         try:
             ticker = yf.Ticker(s)
-            # Get last 2 days of data to compute % change
+            # Try 2d first; fall back to 5d to handle weekends/holidays where 2d can land entirely on non-trading days
             data = ticker.history(period="2d")
+            if data.empty:
+                data = ticker.history(period="5d")
             if not data.empty:
                 last_close = float(data["Close"].iloc[-1])
                 prev_close = float(data["Close"].iloc[-2]) if len(data) > 1 else last_close
                 change_percent = ((last_close - prev_close) / prev_close * 100) if prev_close != 0 else 0.0
-                timestamp = data.index[-1].isoformat() if hasattr(data.index[-1], 'isoformat') else str(data.index[-1])
-                return {
-                    "timestamp": timestamp,
-                    "price": last_close,
-                    "change_percent": round(change_percent, 2)
-                }
+                timestamp = data.index[-1].isoformat() if hasattr(data.index[-1], "isoformat") else str(data.index[-1])
+                return {"timestamp": timestamp, "price": last_close, "change_percent": round(change_percent, 2)}
         except Exception:
             continue
     return None
 
 
-def get_yfinance_historical_prices(symbol: str, start: Union[str, datetime], end: Union[str, datetime], country: str, exchange:Optional[str] = None) -> Optional[list]:
+def get_yfinance_historical_prices(
+    symbol: str, start: str | datetime, end: str | datetime, country: str, exchange: str | None = None
+) -> list | None:
     """Try historical price retrieval with symbol variants.
 
     Returns a list of records with Open/High/Low/Close/Volume or None if not found.
@@ -87,10 +87,12 @@ def get_yfinance_historical_prices(symbol: str, start: Union[str, datetime], end
             continue
     return None
 
-def _get_value(info: dict, key: str) -> Optional[object]:
+
+def _get_value(info: dict, key: str) -> object | None:
     return info.get(key)
 
-def get_yfinance_stock_info(symbol: str, country: str, exchange:Optional[str] = None) -> Optional[dict]:
+
+def get_yfinance_stock_info(symbol: str, country: str, exchange: str | None = None) -> dict | None:
     variants = get_symbol_variants(symbol, country, exchange)
     for s in variants:
         info = _fetch_stock_info(s)
@@ -98,7 +100,8 @@ def get_yfinance_stock_info(symbol: str, country: str, exchange:Optional[str] = 
             return info
     return None
 
-def _fetch_stock_info(symbol: str) -> Optional[dict]:
+
+def _fetch_stock_info(symbol: str) -> dict | None:
     try:
         stock = yf.Ticker(symbol)
         info = stock.info or {}
@@ -132,7 +135,8 @@ def _fetch_stock_info(symbol: str) -> Optional[dict]:
         print(f"Exception {ex}. Failed to fetch data for symbol: {symbol}")
         return None
 
-def _market_cap_type(market_cap: Optional[object]) -> str:
+
+def _market_cap_type(market_cap: object | None) -> str:
     if not isinstance(market_cap, (int, float)):
         return "N/A"
 
@@ -145,7 +149,7 @@ def _market_cap_type(market_cap: Optional[object]) -> str:
     return "mega_cap"
 
 
-def _moving_average(history, window: int) -> Optional[float]:
+def _moving_average(history, window: int) -> float | None:
     if history is None or history.empty or "Close" not in history:
         return None
     series = history["Close"].dropna()
