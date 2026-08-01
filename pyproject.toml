@@ -5,19 +5,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jyapystock"
-version = "0.4.5"
+version = "0.4.6"
 description = "Fetch live and historical stock prices for Indian and American exchanges."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [ { name = "krishna" } ]
 license = "MIT"
 
 # Minimal runtime dependencies. Use compatible ranges for library consumption.
 dependencies = [
-  "yfinance==1.4.1",
+  "yfinance==1.5.2",
   "requests>=2.28,<3",
   "pandas>=1.5,<4",
-  "nse>=3.1.0,<4",
+  "nse>=3.2.1,<4",
   "bse>=3.3.0,<4"
 ]
 
@@ -28,8 +28,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Topic :: Software Development :: Libraries",
