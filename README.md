@@ -1,6 +1,6 @@
 # jyapystock
 
-A Python library to fetch live and historical prices for Indian and American stocks.
+A Python library to fetch live and historical prices for Indian, American, and European stocks.
 
 ## Status Badges
 
@@ -12,14 +12,15 @@ A Python library to fetch live and historical prices for Indian and American sto
 [![NYSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nyse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nyse.yml)
 [![NSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-nse.yml)
 [![BSE tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-bse.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-bse.yml)
+[![Europe tests](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-europe.yml/badge.svg)](https://github.com/JustYetAnother/jyapystock/actions/workflows/ci-europe.yml)
 
 ## Features
 
 - Live price and historical price support with timestamp and % change data
-- Indian (NSE) and American (NYSE/NASDAQ) stocks
+- Indian (NSE/BSE), American (NYSE/NASDAQ), and European (Xetra/Euronext) stocks
 - Multiple data sources: yfinance, NASDAQ, NSE (for India), Alpha Vantage (optional API key)
 - Auto-fallback: tries available sources in order based on country and API key availability
-- Country support: `India` and `USA` with automatic symbol variant detection (e.g., `.NS`, `.BO` for Indian stocks)
+- Country support: `India`, `USA`, and `Europe` with automatic symbol variant detection (e.g., `.NS`/`.BO` for Indian stocks, `.DE`/`.PA`/`.AS`/`.BR`/`.LS` for European stocks)
 
 ## Installation
 
@@ -29,21 +30,14 @@ pip install jyapystock
 
 ## Installation for Development
 
-To install locally for development:
+Dependencies are locked with [Poetry](https://python-poetry.org/) (`poetry.lock`) for CI reproducibility:
 
 ```bash
-# Install editable for development
-pip install -e .
-
-# Or install for local use
-pip install .
+pip install poetry
+poetry install --extras dev
 ```
 
-For development and CI reproducibility, install pinned dev dependencies:
-
-```bash
-pip install -r requirements-dev.txt
-```
+This installs the package in editable mode along with dev tools (pytest, pytest-cov, flake8). Run commands inside the managed environment with `poetry run`, e.g. `poetry run pytest`.
 
 ## Usage
 
@@ -71,6 +65,25 @@ result = provider.get_live_price("SBIN")
 # Using yfinance for India (auto-tries .NS and .BO variants)
 provider = StockPriceProvider(country="India")
 result = provider.get_live_price("RELIANCE")
+```
+
+### European Stocks with Xetra/Euronext
+
+```python
+from jyapystock import StockPriceProvider
+
+# Using yfinance for a specific exchange
+provider = StockPriceProvider(country="europe", exchange="xetr")
+result = provider.get_live_price("SAP")
+# Resolves to SAP.DE
+
+provider = StockPriceProvider(country="europe", exchange="xpar")
+result = provider.get_live_price("MC")
+# Resolves to MC.PA
+
+# No exchange given -- tries every suffix (.DE, .PA, .AS, .BR, .LS) until one resolves
+provider = StockPriceProvider(country="europe")
+result = provider.get_live_price("SAP")
 ```
 
 ### Historical Data
@@ -127,7 +140,7 @@ result = provider.get_live_price("NSDL")
 
 ## Supported Sources
 
-- **yfinance**: Free, supports most global stocks (USA & India)
+- **yfinance**: Free, supports most global stocks (USA, India & Europe)
 - **NASDAQ**: Free, USA stocks only
 - **NYSE**: Free, USA stocks only
 - **NSE**: Free, Indian stocks only (via National Stock Exchange)
@@ -135,20 +148,20 @@ result = provider.get_live_price("NSDL")
 - **Alpha Vantage**: Free tier with limits, requires API key, supports global stocks
 
 ## Testing
-Install library in editable mode
+Install dependencies (see [Installation for Development](#installation-for-development))
 ```bash
-pip install -e .
+poetry install --extras dev
 ```
 Run tests
 ```bash
-python -m unittest discover tests
+poetry run python -m unittest discover tests
 
 # Run provider-specific tests
-PROVIDER=yfinance python -m unittest discover tests
-PROVIDER=nse python -m unittest discover tests
-PROVIDER=bse python -m unittest discover tests
-PROVIDER=nasdaq python -m unittest discover tests
-PROVIDER=alphavantage python -m unittest discover tests
+PROVIDER=yfinance poetry run python -m unittest discover tests
+PROVIDER=nse poetry run python -m unittest discover tests
+PROVIDER=bse poetry run python -m unittest discover tests
+PROVIDER=nasdaq poetry run python -m unittest discover tests
+PROVIDER=alphavantage poetry run python -m unittest discover tests
 ```
 
 ## License
