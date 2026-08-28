@@ -30,21 +30,14 @@ pip install jyapystock
 
 ## Installation for Development
 
-To install locally for development:
+Dependencies are locked with [Poetry](https://python-poetry.org/) (`poetry.lock`) for CI reproducibility:
 
 ```bash
-# Install editable for development
-pip install -e .
-
-# Or install for local use
-pip install .
+pip install poetry
+poetry install --extras dev
 ```
 
-For development and CI reproducibility, install pinned dev dependencies:
-
-```bash
-pip install -r requirements-dev.txt
-```
+This installs the package in editable mode along with dev tools (pytest, pytest-cov, flake8). Run commands inside the managed environment with `poetry run`, e.g. `poetry run pytest`.
 
 ## Usage
 
@@ -155,20 +148,20 @@ result = provider.get_live_price("NSDL")
 - **Alpha Vantage**: Free tier with limits, requires API key, supports global stocks
 
 ## Testing
-Install library in editable mode
+Install dependencies (see [Installation for Development](#installation-for-development))
 ```bash
-pip install -e .
+poetry install --extras dev
 ```
 Run tests
 ```bash
-python -m unittest discover tests
+poetry run python -m unittest discover tests
 
 # Run provider-specific tests
-PROVIDER=yfinance python -m unittest discover tests
-PROVIDER=nse python -m unittest discover tests
-PROVIDER=bse python -m unittest discover tests
-PROVIDER=nasdaq python -m unittest discover tests
-PROVIDER=alphavantage python -m unittest discover tests
+PROVIDER=yfinance poetry run python -m unittest discover tests
+PROVIDER=nse poetry run python -m unittest discover tests
+PROVIDER=bse poetry run python -m unittest discover tests
+PROVIDER=nasdaq poetry run python -m unittest discover tests
+PROVIDER=alphavantage poetry run python -m unittest discover tests
 ```
 
 ## License
