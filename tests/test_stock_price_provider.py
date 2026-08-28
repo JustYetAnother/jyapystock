@@ -31,6 +31,9 @@ class TestStockPriceProvider(unittest.TestCase):
         self.provider_yf_bse = StockPriceProvider(country="India", source="yfinance", exchange="BSE")
         self.provider_yf_nasdaq = StockPriceProvider(country="USA", source="yfinance", exchange="NASDAQ")
         self.provider_yf_nyse = StockPriceProvider(country="USA", source="yfinance", exchange="NYSE")
+        self.provider_yf_europe = StockPriceProvider(country="europe", source="yfinance")
+        self.provider_yf_xetr = StockPriceProvider(country="europe", source="yfinance", exchange="XETR")
+        self.provider_yf_xpar = StockPriceProvider(country="europe", source="yfinance", exchange="XPAR")
         logging.basicConfig(level=logging.WARNING)
     
     def test_live_price_yfinance(self):
@@ -289,6 +292,41 @@ class TestStockPriceProvider(unittest.TestCase):
         self.assertIn("change_percent", result)
         self.assertGreater(result["price"], 0)
     
+    def test_live_price_yf_xetr(self):
+        if not should_run_for(["yfinance"]):
+            self.skipTest("Skipping yfinance tests in this run")
+        result = self.provider_yf_xetr.get_live_price("SAP")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
+
+    def test_live_price_yf_xpar(self):
+        if not should_run_for(["yfinance"]):
+            self.skipTest("Skipping yfinance tests in this run")
+        result = self.provider_yf_xpar.get_live_price("MC")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
+
+    def test_live_price_yf_europe_no_exchange(self):
+        if not should_run_for(["yfinance"]):
+            self.skipTest("Skipping yfinance tests in this run")
+        # No exchange given -- provider should fall back to trying every suffix
+        result = self.provider_yf_europe.get_live_price("SAP")
+        self.assertIsInstance(result, dict)
+        self.assertIn("price", result)
+        self.assertIn("timestamp", result)
+        self.assertIn("change_percent", result)
+        self.assertGreater(result["price"], 0)
+
+    def test_europe_invalid_exchange_raises(self):
+        with self.assertRaises(ValueError):
+            StockPriceProvider(country="europe", exchange="not-a-real-exchange")
+
     @classmethod
     def common_historical_price_test(cls, records):
         for record in records:

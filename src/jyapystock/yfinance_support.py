@@ -9,6 +9,14 @@ from datetime import datetime
 import yfinance as yf
 from dateutil.parser import parse
 
+_EUROPE_SUFFIXES = {
+    "xetr": ".DE",
+    "xpar": ".PA",
+    "xams": ".AS",
+    "xbru": ".BR",
+    "xlis": ".LS",
+}
+
 
 def get_symbol_variants(symbol: str, country: str, exchange: str | None = None) -> list:
     """Generate possible symbol variants based on country conventions."""
@@ -24,6 +32,14 @@ def get_symbol_variants(symbol: str, country: str, exchange: str | None = None) 
     elif country == "usa":
         if "." in symbol:
             variants = [symbol.replace(".", "-"), symbol]
+    elif country == "europe":
+        if "." not in symbol and "^" not in symbol:  # Avoid adding suffixes to indices or already suffixed symbols
+            if exchange and exchange in _EUROPE_SUFFIXES:
+                variants = [f"{symbol}{_EUROPE_SUFFIXES[exchange]}", symbol]
+            else:
+                # No specific exchange given -- try every suffix, same
+                # "try them all" fallback India uses when exchange is unspecified.
+                variants = [f"{symbol}{suf}" for suf in _EUROPE_SUFFIXES.values()] + [symbol]
     return variants
 
 

@@ -37,25 +37,26 @@ class StockPriceProvider:
             self.exchange = self.exchange.lower()
         
         self.exchange_per_country = {
-            "usa": ["nyse", "nasdaq"], 
-            "india": ["nse", "bse"]
+            "usa": ["nyse", "nasdaq"],
+            "india": ["nse", "bse"],
+            "europe": ["xetr", "xpar", "xams", "xbru", "xlis"]
         }
         self.check_exchange_validity()
-        
+
         self.exchange_per_source = {
-            "yfinance":["nse", "bse", "nasdaq", "nyse"],
-            "alphavantage":["nasdaq", "nyse"], 
-            "nasdaq":["nasdaq"], 
+            "yfinance":["nse", "bse", "nasdaq", "nyse", "xetr", "xpar", "xams", "xbru", "xlis"],
+            "alphavantage":["nasdaq", "nyse"],
+            "nasdaq":["nasdaq"],
             "nyse": ["nyse"],
-            "nse":["nse"], 
+            "nse":["nse"],
             "bse":["bse"]
         }
         self.country_per_source = {
-            "yfinance":["india", "usa"],
-            "alphavantage":["usa"], 
-            "nasdaq":["usa"], 
+            "yfinance":["india", "usa", "europe"],
+            "alphavantage":["usa"],
+            "nasdaq":["usa"],
             "nyse": ["usa"],
-            "nse":["india"], 
+            "nse":["india"],
             "bse":["india"]
         }
 
@@ -68,7 +69,7 @@ class StockPriceProvider:
 
     def check_country_validity(self):
         """Check if the provided country is valid."""
-        valid_countries = ["india", "usa"]
+        valid_countries = ["india", "usa", "europe"]
         if self.country not in valid_countries:
             raise ValueError(f"Unknown country: {self.country}. Valid options are: {valid_countries}")
     
