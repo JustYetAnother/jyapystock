@@ -14,7 +14,7 @@ license = "MIT"
 
 # Minimal runtime dependencies. Use compatible ranges for library consumption.
 dependencies = [
-  "yfinance==1.7.0",
+  "yfinance==1.5.2",
   "requests>=2.28,<3",
   "pandas>=1.5,<4",
   "nse>=3.2.1,<4",

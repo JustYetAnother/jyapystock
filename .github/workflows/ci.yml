@@ -10,7 +10,10 @@ jobs:
   test:
     name: Test on Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    # 3.14 is non-blocking: curl_cffi/cffi segfault on this interpreter today (upstream issue, not ours)
+    continue-on-error: ${{ matrix.python-version == 3.14 }}
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.11, 3.12, 3.13, 3.14]
 
