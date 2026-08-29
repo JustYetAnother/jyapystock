@@ -109,7 +109,7 @@ def get_nasdaq_historical_prices(symbol: str, start: Union[str, datetime], end: 
                 if 'data' in json_data and json_data['data'] and 'tradesTable' in json_data['data']:
                     rows = json_data['data']['tradesTable']['rows']
                     if not rows:
-                        logger.error(f"No historical data found for {symbol} in NASDAQ API response {json_data}.")
+                        logger.error(f"No historical data found for {symbol} from {start} to {end} in NASDAQ API response {json_data}.")
                         continue
                     records = []
                     for row in rows:
@@ -140,7 +140,7 @@ def get_nasdaq_historical_prices(symbol: str, start: Union[str, datetime], end: 
 
                     return records
                 else:
-                    logger.error(f"No historical data found for {symbol} in NASDAQ API response {json_data}.")
+                    logger.error(f"No historical data found for {symbol} from {start} to {end} in NASDAQ API response {json_data}.")
             else:
                 logger.error(f"Failed to fetch historical prices for {symbol} from NASDAQ API. Status code: {get_response.status_code}")
         except Exception as e:

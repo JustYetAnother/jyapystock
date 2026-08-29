@@ -131,7 +131,7 @@ def get_nse_historical_prices(symbol: str, start: Union[str, datetime], end: Uni
         
         return records if records else None
     except Exception as e:
-        logging.error(f"Error fetching historical prices for {symbol} from NSE: {str(e)}")
+        logging.error(f"Error fetching historical prices for {symbol} from NSE from {start} to {end}: {str(e)}")
         return None
 
 def change_date_format(date_str: str) -> str:

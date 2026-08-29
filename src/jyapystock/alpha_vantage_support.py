@@ -2,6 +2,7 @@
 Provides live and historical fetchers. Historical function accepts
 `start` and `end` as either `str` (ISO date) or `datetime` and normalizes them.
 """
+import logging
 import os
 import requests
 from typing import Union
@@ -66,7 +67,8 @@ def get_alpha_vantage_historical_price(symbol: str, start: Union[str, datetime],
     try:
         resp = requests.get(url, timeout=20)
         data = resp.json()
-    except Exception:
+    except Exception as e:
+        logging.error(f"Error fetching historical prices for {symbol} from Alpha Vantage from {start_dt} to {end_dt}: {str(e)}")
         return None
     prices = []
     try:
@@ -95,5 +97,6 @@ def get_alpha_vantage_historical_price(symbol: str, start: Union[str, datetime],
                 })
         prices.sort(key=lambda x: x["date"])
         return prices
-    except Exception:
+    except Exception as e:
+        logging.error(f"No historical data found for {symbol} from {start_dt} to {end_dt} in Alpha Vantage response {data}: {str(e)}")
         return []
