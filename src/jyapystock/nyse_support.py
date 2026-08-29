@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import date, datetime
 from typing import Any, Optional, Union
 from dateutil.parser import parse
@@ -158,7 +159,8 @@ def get_nyse_historical_prices(
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
+    except requests.RequestException as e:
+        logging.error(f"Error fetching historical prices for {symbol} from NYSE from {start_date} to {end_date}: {str(e)}")
         return None
     payload = response.json()
     rows: list[dict[str, Any]] = []
@@ -180,6 +182,7 @@ def get_nyse_historical_prices(
             rows = data
 
     if not rows:
+        logging.error(f"No historical data found for {symbol} from {start_date} to {end_date} in NYSE API response {payload}.")
         return []
 
     filtered = _filter_history_by_date(rows, start_date, end_date)

@@ -4,6 +4,7 @@ Provides helper functions to fetch live and historical prices using yfinance
 and to try country-specific symbol variants (e.g., .NS/.BO for India).
 """
 
+import logging
 from datetime import datetime
 
 import yfinance as yf
@@ -99,7 +100,10 @@ def get_yfinance_historical_prices(
                 # change all fields to lowercase for consistency
                 df.columns = [col.lower() for col in df.columns]
                 return df.to_dict("records")
-        except Exception:
+            else:
+                logging.error(f"No historical data found for {s} from {start_dt} to {end_dt} in yfinance response.")
+        except Exception as e:
+            logging.error(f"Error fetching historical prices for {s} from {start_dt} to {end_dt} via yfinance: {str(e)}")
             continue
     return None
 
